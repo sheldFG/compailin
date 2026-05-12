@@ -23,11 +23,15 @@ jobs:
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
 
-      - name: Download Skia
+      - name: Download and Extract Skia
+        shell: powershell
         run: |
-          curl -L --fail --output skia.zip https://github.com/aseprite/skia/releases/download/m102-861e47433b/Skia-Windows-Release-x64.zip
-          if not exist skia.zip (exit /b 1)
-          7z x skia.zip -oskia
+          $url = "https://github.com/aseprite/skia/releases/download/m102-861e47433b/Skia-Windows-Release-x64.zip"
+          Write-Host "Descargando Skia..."
+          Invoke-WebRequest -Uri $url -OutFile skia.zip
+          Write-Host "Extrayendo..."
+          Expand-Archive -Path skia.zip -DestinationPath skia
+          Remove-Item skia.zip
 
       - name: Configure and Compile
         run: |
