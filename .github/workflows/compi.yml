@@ -27,8 +27,10 @@ jobs:
         shell: powershell
         run: |
           $url = "https://github.com/aseprite/skia/releases/download/m102-861e47433b/Skia-Windows-Release-x64.zip"
-          Write-Host "Descargando Skia..."
-          Invoke-WebRequest -Uri $url -OutFile skia.zip
+          # Forzamos el uso de TLS 1.2 para evitar problemas de conexión
+          [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+          Write-Host "Descargando Skia desde $url"
+          Invoke-WebRequest -Uri $url -OutFile skia.zip -UserAgent "Mozilla/5.0"
           Write-Host "Extrayendo..."
           Expand-Archive -Path skia.zip -DestinationPath skia
           Remove-Item skia.zip
