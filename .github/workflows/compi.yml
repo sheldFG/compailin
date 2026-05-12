@@ -25,7 +25,8 @@ jobs:
 
       - name: Download Skia
         run: |
-          curl -L https://github.com/aseprite/skia/releases/download/m102-861e47433b/Skia-Windows-Release-x64.zip --output skia.zip
+          curl -L --fail --output skia.zip https://github.com/aseprite/skia/releases/download/m102-861e47433b/Skia-Windows-Release-x64.zip
+          if not exist skia.zip (exit /b 1)
           7z x skia.zip -oskia
 
       - name: Configure and Compile
