@@ -1,0 +1,38 @@
+name: Build Aseprite Windows
+on:
+  workflow_dispatch: # Esto activará el botón manual que buscabas
+  push:
+    branches:
+      - main # O cambia 'main' por 'principal' si ese es el nombre de tu rama
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+
+      - name: Install dependencies
+        run: |
+          choco install ninja
+          pip install urllib3
+
+      - name: Download Skia
+        run: |
+          curl -L https://github.com/aseprite/skia/releases/download/m102-861e47433b/Skia-Windows-Release-x64.zip --output skia.zip
+          7z x skia.zip -oskia
+
+      - name: Configure and Compile
+        run: |
+          mkdir build
+          cd build
+          cmake -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DLAF_BACKEND=skia -DSKIA_DIR=../skia -DSKIA_LIBRARY_DIR=../skia/out/Release-x64 ..
+          ninja aseprite
+
+      - name: Upload Result
+        uses: actions/upload-artifact@v3
+        with:
+          name: Aseprite-Bundle
+          path: build/bin/
