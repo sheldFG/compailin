@@ -1,0 +1,49 @@
+```yaml
+name: Compile Aseprite for Windows
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch: # Permite disparar el workflow manualmente desde GitHub UI
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout Aseprite repository
+      uses: actions/checkout@v4
+      with:
+        repository: aseprite/aseprite # Clona el repositorio oficial de Aseprite
+        submodules: recursive         # ¡Importante! Clona también Skia y otras dependencias
+
+    - name: Build Aseprite
+      shell: cmd # Usamos la shell de comandos de Windows para ejecutar vcvarsall.bat
+      run: |
+        :: Configura el entorno de Visual Studio 2022 (ajusta la ruta si usas Community/Professional)
+        :: GitHub Actions windows-latest ya tiene Visual Studio preinstalado.
+        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
+        
+        :: Crea y navega al directorio de construcción
+        mkdir build
+        cd build
+        
+        :: Configura CMake con el generador Ninja
+        :: Aseprite's CMake gestionará automáticamente la descarga/vinculación de la versión correcta de Skia (m102 vía submódulo).
+        :: Usamos -DCMAKE_BUILD_TYPE=Release para una compilación optimizada.
+        cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..
+        
+        :: Compila Aseprite usando Ninja
+        ninja
+
+    - name: Upload Aseprite Executables
+      uses: actions/upload-artifact@v4
+      with:
+        name: Aseprite-Windows-Binaries
+        path: build/bin/ # La carpeta donde se encuentran los ejecutables compilados
+        retention-days: 7 # Los artefactos se conservarán durante 7 días
+```
