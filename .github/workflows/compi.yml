@@ -1,16 +1,17 @@
 name: Build Aseprite Windows
 on:
-  workflow_dispatch: # Esto activará el botón manual que buscabas
+  workflow_dispatch:
   push:
     branches:
-      - main # O cambia 'main' por 'principal' si ese es el nombre de tu rama
+      - main
+      - principal
 
 jobs:
   build:
     runs-on: windows-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: 'recursive'
 
@@ -18,6 +19,9 @@ jobs:
         run: |
           choco install ninja
           pip install urllib3
+
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
 
       - name: Download Skia
         run: |
@@ -32,7 +36,7 @@ jobs:
           ninja aseprite
 
       - name: Upload Result
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Aseprite-Bundle
           path: build/bin/
